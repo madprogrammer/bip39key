@@ -14,6 +14,14 @@ The derivation is cryptographically sound (PBKDF2 + HKDF + Ed25519/Cv25519), but
 
 ### With Nix
 
+Run directly without installing:
+
+```
+nix run github:madprogrammer/bip39key -- --phrase "..." --userid "..." --timestamp 1700000000
+```
+
+Or build from a local checkout:
+
 ```
 nix develop
 cargo build --release

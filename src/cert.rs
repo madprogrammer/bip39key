@@ -34,14 +34,9 @@ pub fn build_cert(
 
     // Signing subkey (Ed25519, requires back-signature)
     let signing_subkey: Key<key::SecretParts, key::SubordinateRole> =
-        Key4::<key::SecretParts, key::SubordinateRole>::import_secret_ed25519(
-            &keys.signing, ts,
-        )?
-        .into();
-    let mut signing_signer = signing_subkey
-        .clone()
-        .parts_into_secret()?
-        .into_keypair()?;
+        Key4::<key::SecretParts, key::SubordinateRole>::import_secret_ed25519(&keys.signing, ts)?
+            .into();
+    let mut signing_signer = signing_subkey.clone().parts_into_secret()?.into_keypair()?;
     let back_sig = SignatureBuilder::new(SignatureType::PrimaryKeyBinding)
         .set_signature_creation_time(ts)?
         .sign_primary_key_binding(&mut signing_signer, &primary_pub, &signing_subkey)?;
@@ -54,7 +49,10 @@ pub fn build_cert(
     // Encryption subkey (Cv25519 / ECDH)
     let encryption_subkey: Key<key::SecretParts, key::SubordinateRole> =
         Key4::<key::SecretParts, key::SubordinateRole>::import_secret_cv25519(
-            &keys.encryption, None, None, ts,
+            &keys.encryption,
+            None,
+            None,
+            ts,
         )?
         .into();
     let encryption_binding = SignatureBuilder::new(SignatureType::SubkeyBinding)
@@ -69,7 +67,8 @@ pub fn build_cert(
     // Authentication subkey (Ed25519)
     let auth_subkey: Key<key::SecretParts, key::SubordinateRole> =
         Key4::<key::SecretParts, key::SubordinateRole>::import_secret_ed25519(
-            &keys.authentication, ts,
+            &keys.authentication,
+            ts,
         )?
         .into();
     let auth_binding = SignatureBuilder::new(SignatureType::SubkeyBinding)
@@ -90,7 +89,7 @@ pub fn build_cert(
         auth_binding.into(),
     ];
 
-    Ok(openpgp::cert::Cert::from_packets(packets.into_iter())?)
+    openpgp::cert::Cert::from_packets(packets.into_iter())
 }
 
 /// Build a minimal certificate with primary key only (no subkeys).
@@ -114,7 +113,7 @@ pub fn build_cert_primary_only(
 
     let packets: Vec<openpgp::Packet> = vec![primary_key.into(), userid.into(), sig.into()];
 
-    Ok(openpgp::cert::Cert::from_packets(packets.into_iter())?)
+    openpgp::cert::Cert::from_packets(packets.into_iter())
 }
 
 /// Serialize a certificate to armored TSK (Transferable Secret Key) format.
@@ -142,8 +141,7 @@ mod tests {
     fn primary_only_cert_structure() {
         let seed = test_seed();
         let primary = derive::derive_primary_only(&seed);
-        let cert =
-            build_cert_primary_only(&primary, TEST_USERID, TEST_TIMESTAMP).unwrap();
+        let cert = build_cert_primary_only(&primary, TEST_USERID, TEST_TIMESTAMP).unwrap();
         let policy = &StandardPolicy::new();
         let valid = cert.with_policy(policy, None).unwrap();
         assert_eq!(valid.keys().count(), 1);

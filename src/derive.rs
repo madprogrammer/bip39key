@@ -22,8 +22,7 @@ pub struct DerivedKeyMaterial {
 ///
 /// Checksum validation is skipped to allow flexibility with non-standard phrases.
 pub fn mnemonic_to_seed(phrase: &str, passphrase: &str) -> Result<[u8; 64]> {
-    let mnemonic =
-        Mnemonic::parse_in_normalized_without_checksum_check(Language::English, phrase)?;
+    let mnemonic = Mnemonic::parse_in_normalized_without_checksum_check(Language::English, phrase)?;
     Ok(mnemonic.to_seed_normalized(passphrase))
 }
 
